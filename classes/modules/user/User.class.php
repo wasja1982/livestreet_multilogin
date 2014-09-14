@@ -40,6 +40,16 @@ class PluginMultilogin_ModuleUser extends PluginMultilogin_Inherit_ModuleUser {
         }
         return $bResult;
     }
+	/**
+	 * Автоматическое заллогинивание по ключу из куков
+	 *
+	 */
+	protected function AutoLogin() {
+        if ($this->oSession && isset($_COOKIE['key']) && $_COOKIE['key'] !== $this->oSession->getKey()) {
+			$this->oUserCurrent = null;
+		}
+        parent::AutoLogin();
+	}
     /**
      * Разлогинивание
      *
@@ -60,7 +70,7 @@ class PluginMultilogin_ModuleUser extends PluginMultilogin_Inherit_ModuleUser {
                 'session' => $this->oSession
             );
             $this->Cache_Set($data, "user_session_{$this->oSession->getUserId()}", array(), 60*60*24*4);
-            if ($bRemember) {
+            if ($bRemember && isset($_COOKIE['key'])) {
                 setcookie('key',$sKey,time()+Config::Get('sys.cookie.time'),Config::Get('sys.cookie.path'),Config::Get('sys.cookie.host'),false,true);
             }
         }
