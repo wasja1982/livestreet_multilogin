@@ -45,7 +45,12 @@ class PluginMultilogin_ModuleUser extends PluginMultilogin_Inherit_ModuleUser {
      *
      */
     public function Logout() {
-        if ($this->oSession && $this->oUserCurrent && 
+        $this->UpdateSessionKey(false);
+        parent::Logout();
+    }
+
+    public function UpdateSessionKey($bRemember = false) {
+        if ($this->oSession && $this->oUserCurrent &&
             isset($_COOKIE['key']) && is_string($_COOKIE['key']) && $_COOKIE['key'] === $this->oSession->getKey()) {
             $sKey = md5(func_generator() . time() . $this->oUserCurrent->getLogin());
             $this->oSession->setKey($sKey);
@@ -55,8 +60,10 @@ class PluginMultilogin_ModuleUser extends PluginMultilogin_Inherit_ModuleUser {
                 'session' => $this->oSession
             );
             $this->Cache_Set($data, "user_session_{$this->oSession->getUserId()}", array(), 60*60*24*4);
+            if ($bRemember) {
+                setcookie('key',$sKey,time()+Config::Get('sys.cookie.time'),Config::Get('sys.cookie.path'),Config::Get('sys.cookie.host'),false,true);
+            }
         }
-        parent::Logout();
     }
 }
 ?>
